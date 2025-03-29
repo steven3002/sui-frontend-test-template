@@ -1,0 +1,94 @@
+import React, { useState } from "react";
+import { useSuiClientQuery, useCurrentAccount } from "@mysten/dapp-kit";
+import { Container, Heading, Text } from "@radix-ui/themes";
+import { MEMORY_PACKAGE_ID } from "./constants";
+
+export function ProfileListDisplay() {
+  const currentAccount = useCurrentAccount();
+  const [selectedProfile, setSelectedProfile] = useState<any>(null);
+
+  // Filter only objects of type Profile.
+  const profileTypeFilter = { StructType: `${MEMORY_PACKAGE_ID}::MEMO::Profile` };
+
+  // Query owned objects filtered by Profile type.
+  const { data, isPending, error } = useSuiClientQuery("getOwnedObjects", {
+    owner: currentAccount?.address ?? "",
+    filter: profileTypeFilter,
+    options: { showContent: true },
+  });
+
+  console.log("Profile object data:", data);
+
+  function handleSelect(profile: any) {
+    setSelectedProfile(profile);
+  }
+
+  function renderProfileDetails(profile: any) {
+    // The object is returned inside profile.data.content.
+    if (profile.data.content?.dataType !== "moveObject") {
+      return <Text>Invalid profile data.</Text>;
+    }
+    const fields = profile.data.content.fields;
+    return (
+      <Container style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #ccc" }}>
+        <Heading size="4">Profile Details</Heading>
+        <Text>
+          <strong>ID:</strong> {profile.data.objectId}
+        </Text>
+        <Text>
+          <strong>Name:</strong> {fields.name}
+        </Text>
+        <Text>
+          <strong>Image:</strong> {fields.image}
+        </Text>
+        <Text>
+          <strong>Email:</strong> {fields.email}
+        </Text>
+        <Heading size="5" style={{ marginTop: "1rem" }}>Event List</Heading>
+        {fields.event_list && fields.event_list.length > 0 ? (
+          <ul>
+            {fields.event_list.map((id: string, idx: number) => (
+              <li key={idx}>{id}</li>
+            ))}
+          </ul>
+        ) : (
+          <Text>No events created.</Text>
+        )}
+        <Heading size="5" style={{ marginTop: "1rem" }}>Claimed NFTs</Heading>
+        {fields.claimedNft_list && fields.claimedNft_list.length > 0 ? (
+          <ul>
+            {fields.claimedNft_list.map((id: string, idx: number) => (
+              <li key={idx}>{id}</li>
+            ))}
+          </ul>
+        ) : (
+          <Text>No claimed NFTs.</Text>
+        )}
+      </Container>
+    );
+  }
+
+  return (
+    <Container style={{ padding: "1rem" }}>
+      <Heading size="3">My Profiles</Heading>
+      {isPending && <Text>Loading profiles...</Text>}
+      {error && <Text>Error: {error.message}</Text>}
+      {data && data.data && data.data.length > 0 ? (
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          {data.data.map((profile: any) => (
+            <li
+              key={profile.data.objectId}
+              onClick={() => handleSelect(profile)}
+              style={{ cursor: "pointer", padding: "0.5rem", borderBottom: "1px solid #ddd" }}
+            >
+              <Text>Profile ID: {profile.data.objectId}</Text>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <Text>No profiles found.</Text>
+      )}
+      {selectedProfile && renderProfileDetails(selectedProfile)}
+    </Container>
+  );
+}
