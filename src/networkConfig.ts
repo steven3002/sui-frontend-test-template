@@ -3,7 +3,8 @@ import {
   DEVNET_COUNTER_PACKAGE_ID,
   // TESTNET_COUNTER_PACKAGE_ID,
   MAINNET_COUNTER_PACKAGE_ID,
-  MEMORY_PACKAGE_ID,
+  // MEMORY_PACKAGE_ID,
+  WARLOT_PACKAGEID_4,
 } from "./constants.ts";
 import { createNetworkConfig } from "@mysten/dapp-kit";
 
@@ -18,7 +19,7 @@ const { networkConfig, useNetworkVariable, useNetworkVariables } =
     testnet: {
       url: getFullnodeUrl("testnet"),
       variables: {
-        counterPackageId: MEMORY_PACKAGE_ID,
+        counterPackageId: WARLOT_PACKAGEID_4,
       },
     },
     mainnet: {
